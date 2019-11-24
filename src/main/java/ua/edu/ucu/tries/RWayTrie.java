@@ -7,8 +7,8 @@ import java.util.List;
 
 
 public class RWayTrie implements Trie {
-    private static int R = 256; // radix
-    private Node root;          // root of trie
+    private static int R = 256;
+    private Node root;
     private static class Node
     {
         private Object val;
@@ -23,11 +23,10 @@ public class RWayTrie implements Trie {
         if (x == null) return null;
         return (Tuple) x.val;
     }
-    private Node add(Node x, String key, int val, int d)
-    {  // Change value associated with key if in subtrie rooted at x.
+    private Node add(Node x, String key, int val, int d) {
         if (x == null) x = new Node();
         if (d == key.length()) {  x.val = val; return x; }
-        char c = key.charAt(d); // Use dth key char to identify subtrie.
+        char c = key.charAt(d);
         x.next[c] = add(x.next[c], key, val, d+1);
         return x;
     }
@@ -37,11 +36,10 @@ public class RWayTrie implements Trie {
         if (x == null) return null;
         return (Tuple) x.val;
     }
-    private Node get(Node x, String key, int d)
-    {  // Return value associated with key in the subtrie rooted at x.
+    private Node get(Node x, String key, int d) {
         if (x == null) return null;
         if (d == key.length()) return x;
-        char c = key.charAt(d); // Use dth key char to identify subtrie.
+        char c = key.charAt(d);
         return get(x.next[c], key, d+1);
     }
     @Override
@@ -91,32 +89,6 @@ public class RWayTrie implements Trie {
         return cnt;
     }
 
-
-
-
-
-
-
-
-
-
-
-//    @Override
-//    public void add(Tuple t) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-
-
-
-//    @Override
-//    public boolean delete(String word) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-
-//    @Override
-//    public Iterable<String> words() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
     @Override
     public Iterable<String> words()
     {  return wordsWithPrefix("");  }
@@ -139,17 +111,5 @@ public class RWayTrie implements Trie {
         for (char c = 0; c < R; c++)
             collect(x.next[c], pre + c, q);
     }
-
-//    private
-
-//    @Override
-//    public Iterable<String> wordsWithPrefix(String s) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-
-//    @Override
-//    public int size() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
 
 }
