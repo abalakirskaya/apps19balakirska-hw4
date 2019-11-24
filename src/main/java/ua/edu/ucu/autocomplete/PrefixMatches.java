@@ -62,7 +62,9 @@ public class PrefixMatches {
                 }
 
             }
-            list.add(str);
+            if (str.length() >= 2) {
+                list.add(str);
+            }
 
         }
         Collections.sort(list, Comparator.comparing(String::length));
