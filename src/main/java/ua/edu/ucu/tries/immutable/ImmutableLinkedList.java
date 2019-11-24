@@ -1,305 +1,201 @@
 package ua.edu.ucu.tries.immutable;
 
+import java.util.Arrays;
+
 public class ImmutableLinkedList implements ImmutableList {
     private Node head;
     private Node tail;
-    private int size;
+    public int size;
 
-    public ImmutableLinkedList(){
-        head = null;
-        tail = null;
-        size = 0;
-    }
-    public ImmutableLinkedList(Object[] arr){
-        Node [] elements = make_nodes(arr);
-        head = elements[0];
-        tail = elements[elements.length - 1];
-        size = elements.length;
+    public ImmutableLinkedList() {
+        this.head = null;
+        this.tail = null;
+        this.size = 0;
     }
 
 
-    public ImmutableLinkedList(ImmutableLinkedList linkedList) {
-        if (linkedList.size == 1) {
-            if (linkedList.head != null) {
-                Node node = new Node(linkedList.head.key);
-                head = node;
-            }
-            else{
-                Node node = new Node();
-                head = node;
-            }
-        } else {
-            head = new Node(linkedList.head);
-            Node previousNode = head;
-            Node currentNode = linkedList.head.getNext();
-            Node newNode = null;
-            while (currentNode.getNext() != null) {
-                newNode = new Node(currentNode);
-                previousNode.setNext(newNode);
-                newNode.setPrevious(previousNode);
-                previousNode = newNode;
-                currentNode = currentNode.getNext();
-            }
-            tail = new Node(currentNode);
-            tail.setPrevious(previousNode);
-        }
-    }
-
-
-    private Node[] make_nodes(Object[] arr){
-        Node[] elements = new Node[arr.length];
-        for (int i = 0; i < arr.length; i++){
-            elements[i] = new Node(arr[i]);
-            if (i - 1 >= 0){
-                elements[i - 1].setNext(elements[i]);
-            }
-        }
-        return elements;
-    }
-
-    public Object getFirst(){
-        if (head != null){
-            return head.key;
-        } else{
-            return null;
-        }
-    }
-
-    public Object getLast(){
-        if (tail != null){
-            return tail.key;
-        } else{
-            return null;
-        }
-    }
-
-    public ImmutableLinkedList addFirst(Object n){
-        return (ImmutableLinkedList) add(0, n);
-    }
-
-    public ImmutableLinkedList addLast(Object n){
-        return (ImmutableLinkedList) add(n);
-    }
-
-    public ImmutableLinkedList removeFirst(){
-        ImmutableLinkedList linked_lst = new ImmutableLinkedList(this);
-        linked_lst.head = linked_lst.head.next;
-        linked_lst.head.prev = null;
-        linked_lst.size--;
-        return linked_lst;
-    }
-
-
-    public ImmutableLinkedList removeLast(){
-        ImmutableLinkedList linked_lst = new ImmutableLinkedList(this);
-        linked_lst.tail = linked_lst.tail.prev;
-        linked_lst.tail.next = null;
-        linked_lst.size--;
-        return linked_lst;
+    @Override
+    public ImmutableLinkedList add(Object e) {
+        return add(this.size, e);
     }
 
     @Override
-    public ImmutableLinkedList remove(int i){
-        if (i < this.size){
-            ImmutableLinkedList linked_list = new ImmutableLinkedList(this);
-            Node our_node = linked_list.getNode(i+1, this.size);
-            Node prev = our_node.getPrevious();
-            Node next = our_node.getNext();
-            prev.setNext(next);
-            next.setPrevious(prev);
-            linked_list.size--;
-            return linked_list;
+    public ImmutableLinkedList add(int index, Object e) {
+        size_checking(index);
+        ImmutableLinkedList NewImmutableLinkedList = new ImmutableLinkedList();
+        NewImmutableLinkedList.head = head;
+        NewImmutableLinkedList.tail = tail;
+        NewImmutableLinkedList.size = size+1;
+        if (index==0){
+            Node newNode = new Node(e, NewImmutableLinkedList.head);
+            NewImmutableLinkedList.head = newNode;
         }
         else{
-            throw new IndexOutOfBoundsException();
+            Node hd = new Node(head.key, head.next);
+            NewImmutableLinkedList.head = hd;
+            Node temp = NewImmutableLinkedList.head;
+            for (int i = 0; i < index - 1; i++){
+                temp = temp.next;
+            }
+            Node nextEl = temp.next;
+            temp.next = new Node(e, nextEl);
+        }
+        return NewImmutableLinkedList;
+    }
+
+    @Override
+    public ImmutableLinkedList addAll(Object[] c) {
+        return addAll(this.size, c);
+    }
+
+    @Override
+    public ImmutableLinkedList addAll(int index, Object[] c) {
+        size_checking(index);
+        ImmutableLinkedList TempImmutableLinkedList = new ImmutableLinkedList();
+        ImmutableLinkedList NewImmutableLinkedList;
+        TempImmutableLinkedList.head = head;
+        TempImmutableLinkedList.tail = tail;
+        TempImmutableLinkedList.size = size;
+        NewImmutableLinkedList = TempImmutableLinkedList;
+        for (int i = 0; i < c.length; i++) {
+            NewImmutableLinkedList = NewImmutableLinkedList.add(index, c[i]);
+            index++;
+        }
+        return NewImmutableLinkedList;
+    }
+
+    @Override
+    public Object get(int index) {
+        size_checking(index);
+        Node temp = new Node(head.key, head.next);
+        for (int i = 0; i < index; i++){
+            temp = temp.next;
+        }
+        return temp.key;
+    }
+
+    @Override
+    public ImmutableLinkedList remove(int index) {
+        size_checking(index);
+        ImmutableLinkedList NewImmutableLinkedList = new ImmutableLinkedList();
+        NewImmutableLinkedList.head = head;
+        NewImmutableLinkedList.tail = tail;
+        NewImmutableLinkedList.size = size-1;
+        if (index==0){
+            NewImmutableLinkedList.head = NewImmutableLinkedList.head.next;
+            return NewImmutableLinkedList;
+        }
+        else {
+            Node hd = head;
+            NewImmutableLinkedList.head = new Node(hd.key, hd.next);
+            Node change = NewImmutableLinkedList.head;
+            hd = hd.next;
+            int counter = 0;
+            while (counter < index - 1) {
+                change.next = new Node(hd.key, hd.next);
+                change = change.next;
+                hd = hd.next;
+                counter += 1;
+            }
+            hd = hd.next;
+            while (hd != null) {
+                change.next = new Node(hd.key, hd.next);
+                change = change.next;
+                hd = hd.next;
+            }
+            return NewImmutableLinkedList;
         }
     }
 
     @Override
-    public ImmutableLinkedList add(Object n){
-        return add(size(), n);
+    public ImmutableLinkedList set(int index, Object e) {
+        size_checking(index);
+        ImmutableLinkedList NewImmutableLinkedList = new ImmutableLinkedList();
+        NewImmutableLinkedList.head = head;
+        NewImmutableLinkedList.tail = tail;
+        NewImmutableLinkedList.size = size;
+        return (ImmutableLinkedList) NewImmutableLinkedList.remove(index).add(index, e);
     }
 
     @Override
-    public ImmutableLinkedList add(int i, Object n){
-        Object[] arr = new Object[1];
-        arr[0] = n;
-        return addAll(i, arr);
-    }
-
-    @Override
-    public ImmutableLinkedList addAll(Object[] n){
-        return addAll(size(), n);
-    }
-
-
-    @Override
-    public ImmutableLinkedList addAll(int i, Object[] n){
-        if (this.size == 0) {
-            ImmutableLinkedList linkedList = new ImmutableLinkedList(n);
-            return linkedList;
-        }
-        if (i <= this.size){
-            ImmutableLinkedList linked_list = new ImmutableLinkedList(this);
-            linked_list.size += this.size;
-            Node[] elements = new Node[n.length];
-            for (int k = 0; k < n.length; k++){
-                elements[k] = new Node(n[k]);
-                if (k - 1 >=0){
-                    elements[k - 1].next = elements[i];
-                    if (elements[i] != null) {
-                        elements[i].prev = elements[k - 1];
-                    }
-                }
-            }
-            int k = 0;
-            Node oldNode = linked_list.head;
-            while (k != i - 1){
-                if (k == linked_list.size-1){
-                    oldNode.next = new Node();
-                }else {
-                    if (oldNode.next != null) {
-                        oldNode = oldNode.next;
-                    }
-                }
-                k++;
-            }
-            Node nextNode = oldNode.next;
-            for(int j = 0; j < elements.length; j++){
-                oldNode.next = elements[j];
-                oldNode = oldNode.next;
-            }
-            oldNode.next = nextNode;
-            Node previous = linked_list.head;
-            if (i + n.length < linked_list.size){
-                Node result = linked_list.getNode(i + n.length , this.size);
-                result.prev = elements[elements.length - 1];
-            }
-            if (i != 0){
-                Node first = linked_list.getNode(i, this.size);
-                first.next = elements[0];
-                elements[0].prev = first;
-
-            } else{
-                elements[elements.length - 1].next = linked_list.head;
-            }
-
-            linked_list.size += n.length;
-
-
-
-            Node curr = linked_list.head;
-            for(int y = 0; y < linked_list.size; y++){
-                curr = curr.next;
-
-
-
-            }
-
-            return (ImmutableLinkedList) linked_list;
-        }
-        throw new IndexOutOfBoundsException();
-    }
-
-    @Override
-    public ImmutableLinkedList set(int i, Object n){
-        if (i >= size()){
-            throw new IndexOutOfBoundsException();
-        } else{
-            ImmutableLinkedList linked_list = new ImmutableLinkedList(this);
-            Node our_node = linked_list.getNode(i, this.size);
-            our_node.key = n;
-            return (ImmutableLinkedList) linked_list;
-        }
-    }
-
-    @Override
-    public Object get(int i){
-        Node our_node = new Node();
-        if (this.head != null) {
-            our_node = this.head;
-        }
-        if (i >= this.size()){
-            throw new IndexOutOfBoundsException();
-        } else{
-            int curr = 0;
-            while (i != curr){
-                our_node = our_node.next;
-                curr++;
-            }
-            return our_node.key;
-
-        }
-    }
-
-    private Node getNode(int i, int size){
-        if (i > size){
-            throw new IndexOutOfBoundsException();
-        } else{
-            int curr = 0;
-            Node our_node;
-            if (this.head != null) {
-                our_node = new Node(this.head);
-            } else{
-                our_node = new Node();
-            }
-            while(i-1 != curr){
-                if (our_node.next != null) {
-                    our_node = our_node.next;
-                }
-                curr++;
-            }
-
-            return our_node;
-        }
-    }
-    @Override
-    public int indexOf(Object n){
-        int i = 0;
-        Node our_node = this.head;
-        while( this.size() != i){
-            if(our_node.key.equals(n)){
+    public int indexOf(Object e) {
+        Node temp;
+        temp = head;
+        for (int i = 0; i < size; i++) {
+            if (temp.key.equals(e)) {
                 return i;
-            } else{
-                i++;
-                our_node = our_node.next;
             }
+            temp = temp.next;
         }
-        if(i == this.size()){
-            i = -1;
-        }
-        return i;
+        return -1;
     }
 
     @Override
-    public int size(){
+    public int size() {
+
         return size;
     }
 
     @Override
-    public ImmutableLinkedList clear(){
-        return (ImmutableLinkedList) new ImmutableLinkedList();
+    public ImmutableLinkedList clear() {
+
+        return new ImmutableLinkedList();
     }
 
     @Override
-    public boolean isEmpty(){
-        return size() == 0;
+    public boolean isEmpty() {
+
+        return size == 0;
+    }
+
+
+
+    public ImmutableLinkedList addFirst(Object e) {
+        return (ImmutableLinkedList) add(0, e);
+    }
+
+    public ImmutableLinkedList addLast(Object e) {
+
+        return (ImmutableLinkedList) add(e);
+    }
+
+    public Object getFirst() {
+
+        return head.key;
+    }
+
+    public Object getLast() {
+        return get(size()-1);
+    }
+
+    public ImmutableLinkedList removeFirst() {
+
+        return (ImmutableLinkedList) remove(0);
+    }
+
+    public ImmutableLinkedList removeLast() {
+        return (ImmutableLinkedList) remove(size - 1);
+    }
+
+    private void size_checking(int index) throws IndexOutOfBoundsException {
+        if (index > this.size || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
     }
 
     @Override
-    public Object[] toArray(){
-        Node our_node = this.head;
-        int counter = 0;
-        while(our_node != null){
-            our_node = our_node.next;
-            counter++;
+    public Object[] toArray() {
+        Object[] NewImmutableLinkedList = new Object[size];
+        Node temp = head;
+        for (int i = 0; i < size; i++) {
+            NewImmutableLinkedList[i] = temp.key;
+            temp = temp.next;
         }
-        our_node = this.head;
-        Object[] arr = new Object[counter];
-        for (int i = 0; i < counter; i++){
-            arr[i] = our_node.key;
-            our_node = our_node.next;
-        }
-        return arr;
+        return NewImmutableLinkedList;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(toArray());
     }
 }
